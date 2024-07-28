@@ -4,6 +4,8 @@ const router = express.Router();
 const {check, validationResult} = require('express-validator');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 //This is UserModel
 const User = require('../../models/User');
@@ -63,7 +65,23 @@ router.post('/',
             await user.save(); //Saves user to database //anything that returns a promise add await
 
             // Return jsonwebtoken
-            res.send('User registered');
+            //get the payload with user id
+            const payload = {
+                user:{
+                    id: user.id //with mongoose its .id as its an abstraction of mongodb's id object, normally it would be ._id
+                }
+            };
+
+            //sign the jwt token
+            jwt.sign(
+                payload, 
+                config.get('jwtSecret'),
+                {expiresIn: 360000}, //wants to be 3600 in deployment so its quick, for productions its longer
+                (err, token) => { //either get the token or an error, without an error we send token to user
+                    if(err) throw err;
+                    res.json({token});
+                }
+            );
 
         }catch(err){
             console.error(err.message);
