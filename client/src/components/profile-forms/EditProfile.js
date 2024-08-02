@@ -22,6 +22,7 @@ const EditProfile = ({profile: {profile, loading}, createProfile, getCurrentProf
 
     const [displaySocialInputs, toggleSocialInputs] = useState(false);
 
+    /* //Old UseEffect
     useEffect(()=>{
         getCurrentProfile();
 
@@ -37,10 +38,47 @@ const EditProfile = ({profile: {profile, loading}, createProfile, getCurrentProf
             facebook: loading || !profile.facebook ? '' : profile.facebook,
             linkedin: loading || !profile.linkedin ? '' : profile.linkedin,
             youtube: loading || !profile.youtube ? '' : profile.youtube,
-            instagram: loading || !profile.instagram ? '' : profile.instagram,
+            instagram: loading || !profile.instagram ? '' : profile.instagram
         });
-    });
+    }, [loading, getCurrentProfile, profile]);
+    */
 
+    useEffect(() => {
+      // if there is no profile, attempt to fetch one
+      if (!profile) getCurrentProfile();
+  
+      // if we finished loading and we do have a profile
+      // then build our profileData
+      if (!loading && profile) {
+        const profileData = {
+          company: '',
+          website: '',
+          location: '',
+          status: '',
+          skills: '',
+          githubusername: '',
+          bio: '',
+          twitter: '',
+          facebook: '',
+          linkedin: '',
+          youtube: '',
+          instagram: ''
+      };
+        for (const key in profile) {
+          if (key in profileData) profileData[key] = profile[key];
+        }
+        for (const key in profile.social) {
+          if (key in profileData) profileData[key] = profile.social[key];
+        }
+        // the skills may be an array from our API response
+        if (Array.isArray(profileData.skills))
+          profileData.skills = profileData.skills.join(', ');
+        // set local state with the profileData
+        setFormData(profileData);
+      }
+    }, [loading, getCurrentProfile, profile]);
+
+    
     const {
         company,
         website,
